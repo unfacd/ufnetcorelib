@@ -1,0 +1,5 @@
+# Invariant copies — untracked build artefacts refreshed from the
+# ufsrvcorelib subtree at configure time by the bootstrap.
+ufsrv_config.c
+ufsrv_config_generic_callbacks.c
+ufsrv_config_generic_callbacks_priv.h

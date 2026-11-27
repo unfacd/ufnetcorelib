@@ -1,0 +1,54 @@
+/**
+ * Copyright (C) 2015-2026 unfacd works
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef UFSRV_USER_PROFILE_H
+#define UFSRV_USER_PROFILE_H
+
+#include <uflib/ufsrvuid_type.h>
+#include <ufnet_core/session/session_type.h>
+#include <ufnet_core/profile_key_store_type.h>
+#include <ufnet_msgcore/user/user_profile_type.h>
+#include <uflib/db/db_op_descriptor_type.h>
+#include <uflib/uuid_type.h>
+#include <json-c/json.h>
+
+ProfileKeyStore *DbBackendGetProfileKey(const UfsrvUid *, enum ProfileKeyFormattingCode key_formatting_code, ProfileKeyStore *key_store_out);
+UFSRVResult *DbBackendSetProfileKey(Session *sesn_ptr, const char *profile_key_encoded);
+UFSRVResult *DbBackendSetProfileKeyIfNecessary(Session *sesn_ptr, const char *profile_key_encoded, bool is_force_update);
+ProfileKeyStore *GetAccountAttributeForProfileKeyByStore(json_object *jobj_account, bool is_decoded, ProfileKeyStore *store_in);
+unsigned char *GetAccountAttributeForProfileKeyRawMode(const char *profile_key_encoded, size_t profile_key_encoded_sz, unsigned char *profile_key_raw);
+UFSRVResult *GetAccountAttributes(json_object *jobj_account,  Session *session_out);
+
+UserProfileAuthDescriptor *UserProfileAuthDescriptorFromJson(json_object *jobj, UserProfileAuthDescriptor *profile_descriptor_in);
+UFSRVResult *StoreUserProfileAuthDescriptor(unsigned long userid, const UserProfileAuthDescriptor *profile_descriptor);
+UFSRVResult *RetrieveUserProfileAuthDescriptor(unsigned long userid, UserProfileAuthDescriptor *profile_descriptor, DbOpDescriptor *dbop_descriptor);
+
+Uuid *GetUuid(const char *username, Uuid *uuid_in, DbOpDescriptor *db_descriptor_in);
+Uuid *GetUuidByUserId(unsigned long uid, Uuid *uuid_in, DbOpDescriptor *db_descriptor_in);
+
+UserProfileAuthDescriptor *AllocateUserProfileAuthWithByRefAccess();
+ProfileCredentialRequest *DeserialiseProfileCredentialRequest(const char *cred_request_serialised, ProfileCredentialRequest *cred_request_in);
+
+//convenient value getters callbacks
+const uint8_t *UserProfileAuthDescriptorGetProfileKeySerialisedByRef(const UserProfileAuthDescriptor *profile_descriptor);
+const uint8_t *UserProfileAuthDescriptorGetProfileKeySerialised(const UserProfileAuthDescriptor *profile_descriptor);
+const uint8_t *UserProfileAuthDescriptorGetCommitmentSerialisedByRef(const UserProfileAuthDescriptor *profile_descriptor);
+const uint8_t *UserProfileAuthDescriptorGetCommitmentSerialised(const UserProfileAuthDescriptor *profile_descriptor);
+const uint8_t *UserProfileAuthDescriptorGetVersionSerialised(const UserProfileAuthDescriptor *profile_descriptor);
+const uint8_t *UserProfileAuthDescriptorGetVersionSerialisedByRef(const UserProfileAuthDescriptor *profile_descriptor);
+
+#endif //UFSRV_USER_PROFILE_H

@@ -1,0 +1,251 @@
+
+/**
+* Copyright (C) 2015-2026 unfacd works
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef UFNETCORELIB_CONFIG_DEFS_H
+#define UFNETCORELIB_CONFIG_DEFS_H
+
+#include <ufsrvcorelib/config_defs_ufsrvcorelib.h>
+
+#define _CONFIF_DEFAULT_UFSRV_SECRETS "secrets" ///< identifier added to path name construction for ufsrv_secrets
+
+//see delegator
+#define CONFIG_USE_LOCKLESS_UFSRV_WORKERS_QUEUE		0
+#define CONFIG_USE_ANDERSON_SPINLOCK							1
+#define CONFIG_SESSION_INSERVICE_MAX_TIMEOUT			20 //in seconds session is considred stale if its state in marked as inservice for longer than this amount of time
+//#define CONFIG_USE_OPTIK_LOCK											0
+
+#define CONFIG_DEFAULT_WORKER_THREAD_ARENA_SZ      (1024 * 1024) //1 MByte
+#define CONFIG_DEFAULT_WORKER_THREAD_ARENA_ALIGN_SZ      64
+
+#define CONFIG_LOCKLESS_UFSRV_WORKER_QUEUE_SIZE		512	//bounded job queue msg capacity per thread
+#define CONFIG_LOCKLESS_SESSION_WORKER_QUEUE_SIZE	512	//bounded job queue msg capacity per thread
+
+//buffer size of the new connections pipe and the threshold at which the pipe is read from
+#define CONFIG_NEW_CONNECTIONS_PIPE_SIZE							1024
+#define CONFIG_NEW_CONNECTIONS_PIPE_DRAIN_THREASHOLD	1000
+#define CONFIG_MMSG_MAX_PACKET_SIZE 									8192 //for recvmmsg
+#define CONFIG_MMSG_MAX_PACKET_SIZE_UDP               1472 //assuming an ethernet MTU of 1500 bytes
+#define _CONFIGDEFAULT_RECVMMSG_MAX_PACKET_SZ         32 //howmany packets to read at once inside recvmmsg()
+
+#define CONFIG_FILE_NAME "ufsrv.conf"
+#define MASTER_LOG_FILE_NAME "ufsrv.log"
+#define CONFIG_DIR "/etc/ufsrv"
+#define _TMP_DIR	"/tmp"
+
+#define MAXHOSTLEN  165
+#define CONFIG_MAX_DOMAIN_NAME_SZ                     253 /// maximum allowed size (in chars) for fully formed FQDN domain name eg www.example.com. This total includes all subdomains, domain labels, dots, and the top-level domain (TLD) (excluding protocol component 'http://').
+#define CONFIG_SUBDOMAIN_NAME_MAX_SZ                 63  /// maximum allowed size (in chars) for subdomain names
+#define CONFIG_FULLY_FORMED_WEB_ADDRESS_MAX_SZ        2048 /// for the entire address path including the page structure
+#define CONFIG_FULLY_FORMED_WEB_ADDRESS_CONSERVATIVE_MAX_SZ        512 /// for the entire address path including the page structure
+#define CONFIG_FULLY_FORMED_WEB_ADDRESS_MIN_SZ        sizeof("http://to")
+#define CONFIG_MAX_URL_PROTOCOL_NAME_SZ               10 /// https, ftp etc...
+#define CONFIG_MAX_PORT_NUMBER_SZ                     65535
+#define CONFIG_MAX_PORT_NUMBER_STR_SZ                 "65535"
+
+#define CONFIG_MAX_VERIFICATION_CODE_FORMATTED_SZ			7	//xxxx-xxxx
+#define CONFIG_MAX_VERIFICATION_CODE_SZ								6 //max number of digits in the verification code
+#define CONFIG_MAX_COOKIE_SZ													64
+#define CONFIG_MAX_REGOCOOKIE_SZ											32
+#define CONFIG_MAX_FENCELIST_SZ	256 //max number of fence membership allowed for a given user
+#define CONFIG_UFSRV_UID															1		//system uid for ufrsv owned assets
+
+#define CONFIG_DONATIONS_SUBSCRIBER_ID_SZ							32
+
+#define CONFIG_E164_NUMBER_UFSRV_COUNTRY_PREFIX				"+800"
+#define CONFIG_UNSPECIFIED_E164_NUMBER                "+8000000000000" //ensure client is using the same
+#define CONFIG_E164_NUMBER_VALUE_MAX                  9999999999//10 digits
+#define CONFIG_E164_NUMBER_VALUE_DIGITS_COUNT         10 //excluding country prefix
+#define CONFIG_E164_NUMBER_SZ_MAX                     20 //15 digits number + 5 country code
+
+#ifndef CONFIG_EMAIL_ADDRESS_SZ_MAX
+  #define CONFIG_EMAIL_ADDRESS_SZ_MAX                 320 //https://tools.ietf.org/html/rfc5321#section-4.5.3 (can be up to 320: RFC 5321 and RFC 5322)
+#endif
+
+#ifndef CONFIG_EMAIL_ADDRESS_CONSERVATIVE_SZ_MAX
+  #define CONFIG_EMAIL_ADDRESS_CONSERVATIVE_SZ_MAX 64 //practical limit https://atdata.com/blog/long-email-addresses/
+#endif
+
+#ifndef CONFIG_EMAIL_ADDRESS_SZ_MIN
+  #define CONFIG_EMAIL_ADDRESS_SZ_MIN               6 //a@b.co
+#endif
+
+#define CONFIG_MAX_FENCE_NAME_SIZE										128
+#define CONFIG_MAX_FENCE_DESCRIPTION_SIZE							1024
+#define CONFIG_MAX_NICKNAME_SIZE											64
+#define CONFIG_MAX_FAVATAR_SIZE												128 //fence avatar reference
+#define CONFIG_MAX_INVITE_SET_SIZE										128	//user can include that many invitees per one command invocation
+#define CONFIGDEFAULT_MAX_IMAGE_BLURHASH_SZ           512
+#define CONFIGDEFAULT_MAX_IMAGE_CAPTION_SZ           1024
+#define _CONFIGDEFAULT_ATTACHMENT_NONCE_EXPIRY				1800	//(seconds) 30 minutes to allow for slow uploads
+#define CONFIGDEFAULT_ATTACHMENT_NONCE_PREFIX         "_ATTACHMENT"
+
+#define _CONFIGDEFAULT_MESSAGE_MAX_ATTACHMENTS_SZ 		10	//max attachments allowed in one message
+#define CONFIGDEFAULT_FENCE_LIST_MAX_SZ 		          10	//max number of fences ina collection able to be processed in a FenceCommand message
+
+#define _CONFIGDEFAULT_GEOLOC_FUZZFACTOR							500.0		//meters radius
+#define CONFIG_DEFAULT_GEOLOC_MAX_SZ                  1024 //max allowed geo location string (country,region,area)
+#define CONFIG_FENCE_PERMISSIONS_PFACTOR 							6 //64 buckets initial size factor for hopscotch hash table size (this will be raised to power of 2)
+#define CONFIG_THREAD_LOCKED_OBJECTS_STORE_PFACTOR 		6 //64 buckets initial size factor for hopscotch hash table size (this will be raised to power of 2)
+#define CONFIG_THREAD_LOCKED_OBJECTS_STORE_KEYLEN			0 //bytes of the object that key the store; 0 would key on the object pointer instead (which is desired for Session lock store)
+
+#define CONFIG_FENCE_PERMISSIONS_KEYOFFSET(x, y)			offsetof(x, y)
+#define CONFIG_PREFERENCE_PREFIX											"pref_"
+#define CONFIG_DEFAULT_BOOLPREFS_VALUE                192 //turns on offsets 0 an 1
+#define CONFIG_DEFAULT_PREFS_INT_VALUE                0
+#define CONFIG_DEFAULT_PREFS_STRING_VALUE             "*"
+#define CONFIG_DEFAULT_PREFS_CHAR_VALUE               '*'
+#define CONFIG_DEFAULT_PREFS_REGO_LOCK                -1 //default value for registration lock (for validating repeat registrations/installations)
+#define CONFIG_USER_PROFILEKEY_MAX_SIZE								32 //profile key binary size raw binary size
+#define CONFIG_USER_PROFILEKEY_MAX_SIZE_ENCODED				57 //CONFIG_USER_PROFILEKEY_MAX_SIZE+1)/3)*5, no terminating '\0'
+#define CONFIG_USER_ACCESS_TOKEN_MAX_SIZE							16 //access token binary size
+#define CONFIG_USER_ACCESS_TOKEN_MAX_SIZE_ENCODED			32 //access token encoded size
+
+#define CONFIGDEFAULT_GUARDIAN_NONCE_EXPIRY				    300	//(seconds)
+#define CONFIGDEFAULT_GUARDIAN_NONCE_PREFIX				    "_GUARDIAN"
+
+#define CONFIGDEFAULT_LINKJOIN_NONCE_PREFIX           "_LINKJOIN"
+#define CONFIGDEFAULT_LINKJOIN_NONCE_EXPIRY				    60	//(seconds) 1 minute
+
+#define CONFIG_WEBSOCKET_HANDSHAKE_MIN_SZ             92
+#define CONFIG_WEBSOCKET_HANDSHAKE_MAX_SZ             512
+
+#define CONFIG_CM_TOKEN_SZ_MAX                        255 //GCM token sizes
+#define CONFIG_CM_TOKEN_UNDEFINED                     '*'
+
+#define CONFIG_MAX_ALLOWED_GUARDED_DEVICES            5 //max of five linked guarded devices by default
+
+//START NONPUBLIC
+#include <ufnet_core/config_nonpublic.h>
+//END NONPUBLIC
+
+//max session allocation groups for this server instance
+#define _MEMSPECS_SESSION_ALLOCGROUPS 10
+//number of sessions per allocation group
+#define _MEMSPECS_SESSION_ALLOCGROUP_SZ	1024
+//when we are 90% full across total allocation, andprovided we have room to grow, allocate new sessions group
+#define _MEMSPECS_SESSION_ALLOC_TRIGGER_THRESHOLD	"10%"
+
+//maximum allowed msg size for an intromessage
+#define _CONFIGDEFAULT_INTROMESSAGE_MSGSZ_MAX     1024
+#define CONFIG_DEFAULT_LOOPBACKADDRESS "127.0.0.1"
+#define _CONFIGDEFAULT_BACKENDCACHE_PORT_SESSION	21000
+#define _CONFIGDEFAULT_BACKENDCACHE_HOST_SESSION	"127.0.0.1"
+#define _CONFIGDEFAULT_BACKENDCACHE_PORT_USRMSG		22000
+#define _CONFIGDEFAULT_BACKENDCACHE_HOST_USRMSG		"127.0.0.1"
+#define _CONFIGDEFAULT_BACKENDCACHE_PORT_FENCE		23000
+#define _CONFIGDEFAULT_BACKENDCACHE_HOST_FENCE		"127.0.0.1"
+#define _CONFIGDEFAULT_BACKENDCACHE_PORT_MSGQUEUE		24000
+#define _CONFIGDEFAULT_BACKENDCACHE_HOST_MSGQUEUE		"127.0.0.1"
+
+#define _CONFIGDEDAULT_IDLE_TIME_INTERVAL	100000//usec (= 100 millisec)
+
+//How often to run the timeout checker job in seconds
+#define _CONFIGDEFAULT_SESSION_TIMEOUT_CHECK_FREQUENCY	60000000 //in micro seconds 1 min
+#define _CONFIGDEFAULT_FENCE_ORPHANED_CHECK_FREQUENCY		120000000	//2min //300000000 //in micoro seconds 5 min
+
+#define _CONFIGDEFAULT_GPC_AUTHENTICATOR_CHECK_FREQUENCY		3000000000	//50 minutes in micro seconds
+
+#define _CONFIGDEFAULT_ETAG_SIZE					32
+
+#define _CONFIGDEFAULT_IDLETIME_THRESHOLD 	5 //number of seconds elapsed without heartbeat from client before connection is deemed disconnected
+
+#define _CONFIG_SENDER_CERTIFICATE_EXPIRYTIME         86400000 //1 day in millis
+
+#define _CONFIG_CACHE_BACKEND_RECONNECT_SLEEP         100000000 //in nano second -> 100ms
+#define _CONFIG_CACHE_BACKEND_REPLY_TIMEOUT_USEC      0//500000 //0.5sec
+#define _CONFIG_CACHE_BACKEND_REPLY_TIMEOUT_SEC       0//5
+
+//default value for maximum io session worker threads to spawn. corresponding configfile value: .session_workers_thread_pool'
+#define _CONFIGDEFAULT_MAX_SESSION_WORKERS 2
+
+//default value for listner worker threads
+#define _CONFIGDEFAULT_MAX_LISTENER_WORKERS 1
+
+//default value for maximum ufserver worker threads to spawn. corresponding configfile value: ufsrv_workers_thread_pool
+#define _CONFIGDEFAULT_MAX_UFSRV_WORKERS 3
+
+//how much to read by default. read size is dynamically adjusted depending how volume of read and how sustained that is
+#define _BUFFER_DEFAUL_BLOCKSZ	2048//2K
+
+//default max read block size that can be dynamically adjusted. both can be overriden in config file
+#define _BUFFER_MAX_BLOCKSZ 1024000 //1MB
+
+//to use with setsockopt SO_RCVBUF and SO_SNDBUF
+#ifdef __gnu_linux__
+#define _CONFIG_LARGE_SOCK_SIZE 33554431
+#else
+#define _CONFIG_LARGE_SOCK_SIZE 4096
+#endif
+
+#define INT16_LONGEST_STR	"-32768"
+#define UINT16_LONGEST_STR	"65535"
+#define INT32_LONGEST_STR 	"-2147483648"
+#define UINT32_LONGEST_STR 	"4294967295"
+#define INT64_LONGEST_STR 	"-9223372036854775808"
+#define UINT64_LONGEST_STR 	"18446744073709551615"
+#define UINT64_LONGEST_STR_SZ 	20
+
+#define _CONFIGDEFAULT_DEFAULT_UFSRVMEDIA_UPLOAD_URI "https://media.unfacd.io/"
+#define _CONFIGDEFAULT_DEFAULT_UFSRVMEDIA_STORAGE_LOCATION "/ufsrv_media/"
+
+//131071
+#define _CONFIDEFAULT_HASHTABLE_ATTACHMENTS_SZ	65521//10009//this should be configurable load time as well
+
+/*
+ * Glibc's pid_t is implemented as a signed
+ * 32bit integer, for both 32 and 64bit systems - max value: 2147483648.
+ */
+#define MAXPIDLEN 10
+
+//when encoding user number for network directory listing cap encoding to this amount of bytes
+#define USER_NUMBER_SHA_1_TOKEN_LIMIT 14
+
+//size of verification code generated for new registrations: 'xxx-xxx'
+#define _VERIFICATION_CODE_SZ	7
+
+#define _NONCE_NAME	"nonce"
+//used when setting nonce in redis
+#define _OPEN_NONCE_PREFIX	"_OPEN"
+//valid for..
+#define _OPEN_NONCE_TTL	30 /*seconds*/
+
+#define _ACCOUNT_NONCE_PREFIX	"_ACCOUNT"
+#define _ACCOUNT_NONCE_TTL	30
+
+//has prefix for fetching user binary blobs
+#define _ATTCHMENT_DOWNLOAD_PREFIX "_USERBLOB"
+
+
+#define CONFIG_DEFAULT_UNSET_LOCATION ":::0.000000:0.000000"
+
+//set underwhich all registered nicknames are kept for quick lookup
+#define _NAMESPACE_BACKEND_NICKNAMES_DIRECTORY	"_NICKNAMES_DIRECTORY"
+
+//set underwhich all registered username tokens are kept for quick lookup
+#define _NAMESPACE_BACKEND_ACCOUNTS_DIRECTORY	"ACCOUNTS_DIRECTORY"
+
+//when user makes a PUT request for endpoint /V1/Attachment, this request heade must be present
+#define _ATTACHMENT_HEADER_NONCE    "X-UFSRV-ATTACHMENT-NONCE"
+#define _ZKGROUP_AUTHORIZATION      "X-Group-Authorization"
+#define HTTP_HEADER_COOKIE          "X-Ufsrv-Cookie"
+#define HTTP_HEADER_TIMESTAMP       "X-Unfacd-Timestamp"
+#define HTTP_HEADER_INTEGRITY_TOKEN "X-Integrity-Token"
+#define HTTP_HEADER_AUTHORIZATION   "Authorization"
+#define HTTP_HEADER_PENDING_COOKIE  "X-Unfacd-Pending-Cookie"
+
+#endif //UFNETCORELIB_CONFIG_DEFS_H

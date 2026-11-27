@@ -1,0 +1,19 @@
+build/
+*.o
+*.a
+*.so
+*.deb
+/build_test/
+html/
+/.claude/worktrees/ufsrv-config-args/
+/.claude/worktrees/ufsrv-provider/
+dev/scripts/ufsrv_config_generator/generated/*
+!dev/scripts/ufsrv_config_generator/generated/.gitkeep
+dev/scripts/ufsrv_config_generator/ufnetcorelib/
+/packages/ufsrvcorelib/
+.idea/
+/tests/concurrency_correctness_proofs/ufsrvcli.log
+ufsrvcli.log
+# protobuf staging: generated from protobuf/*.proto by the protobuf_* targets
+protobuf/generated/*
+!protobuf/generated/.gitkeep

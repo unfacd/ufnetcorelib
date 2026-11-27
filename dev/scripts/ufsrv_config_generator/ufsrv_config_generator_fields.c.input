@@ -1,0 +1,331 @@
+/**
+ * @file ufsrv_config_generator_core_fields.c.input
+ * @brief Cold catalogue — ufsrv-class server adjunct config and runtime fields.
+ *
+ * Copyright (C) 2015-2026 unfacd works
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * These fields live below the demarcation line in struct ufsrv:
+ *
+ *   ///// ufsrv class server adjunct configurations \\\\\\\
+ *
+ * They are composed with the core catalogue at the derivative server's
+ * build time.  ufsrvcorelib does NOT know about these fields — they
+ * are shipped as a separate catalogue for consumer-side composition.
+ */
+// @version 5
+// @sha     b9cf117e9ce0d6e4a56e6f0440b87b5741982a94
+
+#include <netinet/in.h>
+#include <lua.h>
+
+#include <ufsrvcorelib/ufsrv_core/ufsrv_config/ufsrv_config_field_descriptor.h>
+#include <ufsrvcorelib/ufsrv_core/ufsrv_config/ufsrv_config_store_operating_state_enum.h>
+#include <ufsrvcorelib/ufsrv_core/ufsrv_config/ufsrv_config_types.h>
+#include <ufsrvcorelib/ufsrv_core/system/server_run_mode_enum.h>
+#include <ufsrvcorelib/ufsrv_core/system/server_process_mode_enum.h>
+#include <ufsrvcorelib/ufsrv_core/system/ufsrv_thread_cpu_affinity_descriptor_type.h>
+#include <ufsrvcorelib/ufsrv_core/service/file_loader/file_loader_service_descriptor_type.h>
+#include <ufnetcorelib/ufnet_msgcore/cloud_authorization_token_type.h>
+#include <ufnetcorelib/ufnet_msgcore/msgqueue_backend/ufsrvmsgqueue_type.h>
+#include <ufnetcorelib/ufnet_core/cache_backend/persistence_type.h>
+#include <ufnetcorelib/ufnet_msgcore/utils_curve.h>
+#include <ufnetcorelib/ufnet_core/ratelimit_v2/ratelimit_application_policy_type.h>
+
+static const UfsrvConfigFieldDescriptorForGenerator core_fields[] = {
+
+    {
+        .name            = "ufsrvmedia_upload_uri",
+        .value_type      = UFSRV_CONFIG_VALUE_STR,
+        .c_lang_type     = "char *",
+        .config_file_key = CONF_FILE_LITERAL_UFSRVMEDIA_UPLOAD_URI,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .str_val = "127.0.0.1" }, .type_allocation_sz = 257 } }, //MBUF + nil
+        .lifecycle       = { .on_inflated = "GenericStrInflator", .on_value_available = "GenericStrSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStrTeardown" },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "msgqueue_address",
+        .value_type      = UFSRV_CONFIG_VALUE_STR,
+        .c_lang_type     = "char *",
+        .config_file_key = CONF_FILE_LITERAL_MSGQUEUE_ADDRESS,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .str_val = "127.0.0.1" }, .type_allocation_sz = 257 } }, //MBUF + nil
+        .lifecycle       = { .on_inflated = "GenericStrInflator", .on_value_available = "GenericStrSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStrTeardown" },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "msgqueue_port",
+        .value_type      = UFSRV_CONFIG_VALUE_INT,
+        .c_lang_type     = "unsigned",
+        .config_file_key = CONF_FILE_LITERAL_MSGQUEUE_PORT,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .int_val = 6380 } } },
+        .lifecycle       = { .on_inflated = "GenericIntInflator", .on_value_available = "GenericIntSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "persistence_backend_address",
+        .value_type      = UFSRV_CONFIG_VALUE_STR,
+        .c_lang_type     = "char *",
+        .config_file_key = CONF_FILE_LITERAL_PERSISTENCE_BACKEND_ADDRESS,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .str_val = "127.0.0.1" }, .type_allocation_sz = 257 } }, //MBUF + nil
+        .lifecycle       = { .on_inflated = "GenericStrInflator", .on_value_available = "GenericStrSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStrTeardown" },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "persistence_backend_port",
+        .value_type      = UFSRV_CONFIG_VALUE_INT,
+        .c_lang_type     = "unsigned",
+        .config_file_key = CONF_FILE_LITERAL_PERSISTENCE_BACKEND_PORT,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .int_val = 6379 } } },
+        .lifecycle       = { .on_inflated = "GenericIntInflator", .on_value_available = "GenericIntSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "cache_backend_address_usrmsg",
+        .value_type      = UFSRV_CONFIG_VALUE_STR,
+        .c_lang_type     = "char *",
+        .config_file_key = CONF_FILE_LITERAL_CACHE_BACKEND_ADDRESS_USRMSG,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .str_val = "127.0.0.1" }, .type_allocation_sz = 257 } }, //MBUF + nil
+        .lifecycle       = { .on_inflated = "GenericStrInflator", .on_value_available = "GenericStrSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStrTeardown" },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "cache_backend_port_usrmsg",
+        .value_type      = UFSRV_CONFIG_VALUE_INT,
+        .c_lang_type     = "unsigned",
+        .config_file_key = CONF_FILE_LITERAL_CACHE_BACKEND_PORT_USRMSG,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .int_val = 6379 } } },
+        .lifecycle       = { .on_inflated = "GenericIntInflator", .on_value_available = "GenericIntSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "cache_backend_address_fence",
+        .value_type      = UFSRV_CONFIG_VALUE_STR,
+        .c_lang_type     = "char *",
+        .config_file_key = CONF_FILE_LITERAL_CACHE_BACKEND_ADDRESS_FENCE,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .str_val = "127.0.0.1" }, .type_allocation_sz = 257 } }, //MBUF + nil
+        .lifecycle       = { .on_inflated = "GenericStrInflator", .on_value_available = "GenericStrSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStrTeardown" },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "cache_backend_port_fence",
+        .value_type      = UFSRV_CONFIG_VALUE_INT,
+        .c_lang_type     = "unsigned",
+        .config_file_key = CONF_FILE_LITERAL_CACHE_BACKEND_PORT_FENCE,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .int_val = 6379 } } },
+        .lifecycle       = { .on_inflated = "GenericIntInflator", .on_value_available = "GenericIntSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "geoip_service_address",
+        .value_type      = UFSRV_CONFIG_VALUE_STR,
+        .c_lang_type     = "char *",
+        .config_file_key = CONF_FILE_LITERAL_GEOIP_BACKEND_ADDRESS,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .str_val = "127.0.0.1" }, .type_allocation_sz = 257 } }, //MBUF + nil
+        .lifecycle       = { .on_inflated = "GenericStrInflator", .on_value_available = "GenericStrSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStrTeardown" },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "geoip_service_port",
+        .value_type      = UFSRV_CONFIG_VALUE_INT,
+        .c_lang_type     = "unsigned",
+        .config_file_key = CONF_FILE_LITERAL_GEOIP_BACKEND_PORT,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .int_val = 6379 } } },
+        .lifecycle       = { .on_inflated = "GenericIntInflator", .on_value_available = "GenericIntSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "msgqueue_sub",
+        .value_type      = UFSRV_CONFIG_VALUE_PTR, //allocated by host app
+        .c_lang_type     = "MessageQueueBackend *",
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = {  } },
+        .lifecycle       = { .on_inflated = NULL, .on_value_available = "GenericPtrSetter", .on_value_reloaded = NULL, .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "persistence_backend",
+        .value_type      = UFSRV_CONFIG_VALUE_PTR,
+        .c_lang_type     = "PersistenceBackend *", //allocated by host
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = {  } },
+        .lifecycle       = { .on_inflated = NULL, .on_value_available = "GenericPtrSetter", .on_value_reloaded = NULL, .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "usrmsg_cachebackend",
+        .value_type      = UFSRV_CONFIG_VALUE_PTR,
+        .c_lang_type     = "UserMessageCacheBackend *", //alocated by host
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = {  } },
+        .lifecycle       = { .on_inflated = NULL, .on_value_available = "GenericPtrSetter", .on_value_reloaded = NULL, .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "fence_cachebackend",
+        .value_type      = UFSRV_CONFIG_VALUE_PTR, //allocated by host
+        .c_lang_type     = "FenceCacheBackend *",
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = {  } },
+        .lifecycle       = { .on_inflated = NULL, .on_value_available = "GenericPtrSetter", .on_value_reloaded = NULL, .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "db_backend_address",
+        .value_type      = UFSRV_CONFIG_VALUE_STR,
+        .c_lang_type     = "char *",
+        .config_file_key = CONF_FILE_LITERAL_DB_BACKEND_ADDRESS,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .str_val = "127.0.0.1" }, .type_allocation_sz = 257 } }, //MBUF + nil
+        .lifecycle       = { .on_inflated = "GenericStrInflator", .on_value_available = "GenericStrSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStrTeardown" },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "db_backend_port",
+        .value_type      = UFSRV_CONFIG_VALUE_INT,
+        .c_lang_type     = "unsigned",
+        .config_file_key = CONF_FILE_LITERAL_DB_BACKEND_PORT,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = {  } },
+        .lifecycle       = { .on_inflated = "GenericIntInflator", .on_value_available = "GenericIntSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "db_backend_username",
+        .value_type      = UFSRV_CONFIG_VALUE_STR,
+        .c_lang_type     = "char *",
+        .config_file_key = CONF_FILE_LITERAL_DB_BACKEND_USERNAME,
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .str_val = "ufsrv" }, .type_allocation_sz = 65 } }, //MINIBUF + nil
+        .lifecycle       = { .on_inflated = "GenericStrInflator", .on_value_available = "GenericStrSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStrTeardown" },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "db_backend_password",
+        .value_type      = UFSRV_CONFIG_VALUE_STR,
+        .config_file_key = CONF_FILE_LITERAL_DB_BACKEND_PASSWORD,
+        .c_lang_type     = "char *",
+        .domain          = UFSRV_CONFIG_DOMAIN_CONFIG,
+        .config_field_default    = { .config = { .stored_value = { .str_val = "" }, .type_allocation_sz = 256 } }, //MINIBUF
+        .lifecycle       = { .on_inflated = "GenericStrInflator", .on_value_available = "GenericStrSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStrTeardown" },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "cloud_authorization_fcm",
+        .c_lang_type     = "CloudAuthorizationToken *",
+        .value_type      = UFSRV_CONFIG_VALUE_PTR,
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = { .stored_value = { } } },
+        .lifecycle       = { .on_inflated = NULL, .on_value_available = "GenericPtrSetter", .on_value_reloaded = NULL, .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+     {
+        .name            = "cloud_authorization_integrity_api",
+        .c_lang_type     = "CloudAuthorizationToken *",
+        .value_type      = UFSRV_CONFIG_VALUE_PTR,
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = { .stored_value = { } } },
+        .lifecycle       = { .on_inflated = NULL, .on_value_available = "GenericPtrSetter", .on_value_reloaded = NULL, .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+
+        // Config: crypto params (populated from config file / key material)
+    {
+        .name            = "crypto_private_server_params",
+        .value_type      = UFSRV_CONFIG_VALUE_STRUCT,
+        .c_lang_type     = "uint8_t",
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = { .type_allocation_sz =  1537} }, ////todo hardcoded SERVER_SECRET_PARAMS_SIZE];//1537
+        .lifecycle         = { .on_inflated = "GenericStructInflator", .on_value_available = "GenericStructSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStructTeardown" },
+        .is_as_ptr_getter = true,
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "crypto_public_server_params",
+        .value_type      = UFSRV_CONFIG_VALUE_STRUCT,
+        .c_lang_type     = "uint8_t",
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = { .type_allocation_sz =  289 } }, //todo hardcoded SERVER_PUBLIC_PARAMS_SIZE];//289
+        .lifecycle     = { .on_inflated = "GenericStructInflator", .on_value_available = "GenericStructSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStructTeardown" },
+        .is_as_ptr_getter = true,
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "crypto_private_key_server",
+        .value_type      = UFSRV_CONFIG_VALUE_STRUCT,
+        .c_lang_type     = "ec_private_key",
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = { .type_allocation_sz =  32 } }, //todo hardcoded uint8_t data[DJB_KEY_LEN];
+        .lifecycle     = { .on_inflated = "GenericStructInflator", .on_value_available = "GenericStructSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStructTeardown" },
+        .is_as_ptr_getter = true,
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "crypto_public_key_server",
+        .value_type      = UFSRV_CONFIG_VALUE_STRUCT,
+        .c_lang_type     = "ec_public_key",
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = { .type_allocation_sz =  33 } }, //todo hardcoded uint8_t data[DJB_KEY_LEN+1];
+        .lifecycle     = { .on_inflated = "GenericStructInflator", .on_value_available = "GenericStructSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStructTeardown" },
+        .is_as_ptr_getter = true,
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "crypto_public_key_server_serialised",
+        .value_type      = UFSRV_CONFIG_VALUE_STRUCT,
+        .c_lang_type     = "ec_public_key",
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = { .type_allocation_sz =  33 } }, //todo hardcoded uint8_t data[DJB_KEY_LEN+1];
+        .lifecycle     = { .on_inflated = "GenericStructInflator", .on_value_available = "GenericStructSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStructTeardown" },
+        .is_as_ptr_getter = true,
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "server_keyid",
+        .value_type      = UFSRV_CONFIG_VALUE_INT,
+        .c_lang_type     = "size_t",
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = { .stored_value = { .int_val = 0 } } },
+        .lifecycle = { .on_inflated = "GenericIntInflator", .on_value_available = "GenericIntSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "crypto_initialised",
+        .value_type      = UFSRV_CONFIG_VALUE_INT,
+        .c_lang_type     = "unsigned",
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = { .stored_value = { .int_val = 0 } } },
+        .lifecycle = { .on_inflated = "GenericIntInflator", .on_value_available = "GenericIntSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = NULL },
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+    {
+        .name            = "ratelimit_policy",
+        .value_type      = UFSRV_CONFIG_VALUE_STRUCT,
+        .c_lang_type     = "RateLimitApplicationPolicy",
+        .domain          = UFSRV_CONFIG_DOMAIN_RUNTIME,
+        .config_field_default    = { .config = { .type_allocation_sz = sizeof(RateLimitApplicationPolicy) } },
+        .lifecycle = { .on_inflated = "GenericStructInflator", .on_value_available = "GenericStructSetter", .on_value_reloaded = "GenericReloadedStub", .on_teardown = "GenericStructTeardown" },
+        .is_as_ptr_getter = true,
+        .validation      = { .type = UFSRV_CONFIG_CHECK_NONE },
+    },
+
+    // Sentinel — do not remove
+    { .name = NULL }
+};
+
+static const size_t core_field_count =
+    (sizeof(core_fields) / sizeof(core_fields[0])) - 1;

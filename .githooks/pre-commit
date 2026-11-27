@@ -1,0 +1,55 @@
+#!/bin/bash
+set -e
+ROOT="dev/scripts/ufsrv_config_generator"
+VERFILE="${ROOT}/VERSION"
+
+SOURCES=(
+  "${ROOT}/ufsrv_config_generator.c"
+  "${ROOT}/ufsrv_config_generator_fields.c.input"
+  ".githooks/pre-commit"
+)
+
+# 1. Detect if any tracked source changed
+changed=0
+for f in "${SOURCES[@]}"; do
+  if ! git diff --cached --quiet -- "$f" 2>/dev/null; then changed=1; break; fi
+  if ! git diff --quiet -- "$f" 2>/dev/null; then changed=1; break; fi
+done
+
+# 2. Bump version if anything changed
+if [ $changed -eq 1 ]; then
+  v=$(cat "$VERFILE" 2>/dev/null || echo 0)
+  echo $((v + 1)) > "$VERFILE"
+  git add "$VERFILE"
+fi
+
+# 3. Hash tracked sources → .version files AND stamp into source headers
+v=$(cat "$VERFILE")
+for f in "${SOURCES[@]}"; do
+  if [ -f "$f" ]; then
+    sha=$(git hash-object "$f")
+    echo "$sha" > "${f}.version"
+    # Stamp version + SHA into the file itself
+    if grep -q '^// @version ' "$f" 2>/dev/null; then
+      sed -i "s|^// @version .*|// @version ${v}|" "$f"
+      sed -i "s|^// @sha .*|// @sha     ${sha}|" "$f"
+    else
+      # Add markers after the first /**...*/ block or at line 1
+      awk -v ver="$v" -v sha="$sha" '
+        NR==1 && /^\/\*\*/ { print; in_comment=1; next }
+        in_comment && /\*\//  { print; printf "// @version %s\n// @sha     %s\n", ver, sha; in_comment=0; next }
+        { print }
+      ' "$f" > "${f}.tmp" && mv "${f}.tmp" "$f"
+    fi
+    git add "$f" "${f}.version"
+  fi
+done
+
+# 4. Regenerate output
+cc -I include/ufsrvcorelib -I include/ufsrvcorelib/ufsrv_core/ufsrv_config \
+   -I include/ufsrvcorelib/ufsrv_core/configfile_processor \
+   -o "${ROOT}/gen_host" "${ROOT}/ufsrv_config_generator.c"
+"${ROOT}/gen_host" --header --output-dir="${ROOT}/generated" --include-prefix=ufsrvcorelib
+"${ROOT}/gen_host" --source --output-dir="${ROOT}/generated" --include-prefix=ufsrvcorelib
+rm -f "${ROOT}/gen_host"
+git add "${ROOT}/generated/"*.h "${ROOT}/generated/"*.c

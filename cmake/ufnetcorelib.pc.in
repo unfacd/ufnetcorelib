@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: ufnetcorelib
+Description: Core library for the unfacd messaging network platform (session mgmt, messaging, HTTP, auth)
+Version: @ufnetcorelib_VERSION@
+Requires.private: uflib ufsrvcorelib openssl
+Libs: -L${libdir} -lufnetcorelib
+Cflags: -I${includedir} -I${includedir}/ufnetcorelib -I${includedir}/ufnetcorelib/packages

@@ -1,0 +1,20 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(uflib)
+find_dependency(ufsrvrxlib)
+find_dependency(ufsrvcorelib)
+find_dependency(OpenSSL)
+find_dependency(PkgConfig)
+pkg_check_modules(JSONC REQUIRED IMPORTED_TARGET json-c)
+pkg_check_modules(UTF8PROC REQUIRED IMPORTED_TARGET libutf8proc)
+pkg_check_modules(MARIADB REQUIRED IMPORTED_TARGET libmariadb)
+pkg_check_modules(JEMALLOC REQUIRED IMPORTED_TARGET jemalloc)
+
+get_filename_component(ufnetcorelib_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+if(NOT TARGET ufnetcorelib::ufnetcorelib)
+    include("${ufnetcorelib_CMAKE_DIR}/ufnetcorelibTargets.cmake")
+endif()
+
+set(ufnetcorelib_LIBRARIES ufnetcorelib::ufnetcorelib)

@@ -1,0 +1,63 @@
+/**
+* Copyright (C) 2015-2026 unfacd works
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
+/**
+ * @file config_ufnetcorelib.h.in
+ * @brief CMake configure_file() template — generates config_ufnetcorelib.h at configure time.
+ *
+ * Four‑step flow for build‑time constants:
+ *   1. CMakeLists.txt      set(MY_FEATURE 1)
+ *   2. config_ufnetcorelib.h.in          #define MY_FEATURE (at)MY_FEATURE(at)
+ *   3. cmake configure      configure_file(config_ufnetcorelib.h.in config_ufnetcorelib.h)
+ *   4. source code          #include <config_ufnetcorelib.h>  →  MY_FEATURE is now 1
+ *
+ * The generated config_ufnetcorelib.h lands in CMAKE_CURRENT_BINARY_DIR, which is listed
+ * FIRST in target_include_directories() so the build‑dir copy always wins.
+ */
+
+#ifndef CONFIG_UFNETCORELIB_H
+#define CONFIG_UFNETCORELIB_H
+
+#define _REENTRANT
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE
+#endif
+
+#define __UF_TESTING   @__UF_TESTING@
+#define __UF_DEV        @__UF_DEV@
+#define UFNET_DEBUG_BUILD @UFNET_DEBUG_BUILD@
+#define UFNET_DEBUG_BUILD_L2 @UFNET_DEBUG_L2@
+#define UFNET_DEBUG_BUILD_L3 @UFNET_DEBUG_L3@
+
+#cmakedefine HAVE_VALGRIND
+#cmakedefine HAVE_VALGRIND_DRD
+#cmakedefine HAVE_VALGRIND_MEMCHECK
+
+#cmakedefine HAVE_RECVMMSG
+
+#cmakedefine HAVE_SA_LEN
+#cmakedefine HAVE_HSTRERROR
+#cmakedefine HAVE_INET_PTON
+#cmakedefine HAVE_INET_NTOP
+
+/* ── cmake‑injected values ──────────────────────────────────────────── */
+/*    Add new @...@ definitions here.                                    */
+
+/* ── static config (temporary — to be absorbed above) ───────────────── */
+#include "config_defs_ufnetcorelib.h"
+
+#endif /* CONFIG_UFNETCORELIB_H */
